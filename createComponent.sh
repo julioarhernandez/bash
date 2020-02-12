@@ -1,5 +1,7 @@
 #!/bin/bash
 
+GUIDE_COUNT_PER_PAGE=50
+
 STATIC_PATH="/Users/juliorodriguez/work/projects/oceania/redesign-oci-static/src"
 LYSSA_PATH="/Users/juliorodriguez/work/projects/common/oci-lyssa-mocks"
 
@@ -24,23 +26,23 @@ LYSSA_COMPONENT_TEMPLATE="{namespace oceania.components}
     </div>
 {/template}"
 
-LYSSA_MODULE_TEMPLATE="{namespace oceania.modules}
+LYSSA_MODULE_TEMPLATE="{namespace oceania.modules}\n
 
-{template .mxxx}
-    {@param? class: string}
+{template .mxxx}\n
+    {@param? class: string}\n\n
 
-    <!-- cxxx -->
-    <section class=\"cxxx{if \$class} {\$class}{/if}\">
+    <!-- mxxx -->\n
+    <section class=\"mxxx{if \$class} {\$class}{/if}\">\n\n
 
-    </section>
+    </section>\n
 {/template}"
 
 STATIC_SCRIPT_TEMPLATE="import $ from \"jquery\";\n\n
 export default \$(function() {});"
 
-STATIC_STYLE_COMPONENT_TEMPLATE=".cxxx{}"
+STATIC_STYLE_COMPONENT_TEMPLATE=".Exxx{}"
 
-STATIC_STYLE_COMPONENT_MAIN_TEMPLATE="\n@import \"components/xxx\";"
+STATIC_STYLE_COMPONENT_MAIN_TEMPLATE="@import \"components/xxx\";"
 
 fileExist(){
   filePath=$1
@@ -75,6 +77,35 @@ replaceToken(){
   template=$1
   string=$2
   echo ${template//xxx/${string}}
+}
+replaceElement(){
+  template=$1
+  string=$2
+  echo ${template//E/${string}}
+}
+
+floatDivisionCeiling(){
+  number1=$1
+  number2=$2
+  echo "if ( ${number1}%${number2} ) ${number1}/${number2}+1 else ${number1}/${number2}" | bc
+}
+
+zeroPad(){
+  number=$1
+  printf "%02d" $number
+}
+
+addSuffix(){
+  filename=$1
+  number=$2
+  zeroPadded=$(zeroPad $number)
+  #remove 01 as we are not starting at 01
+  if [[ $zeroPadded -eq "01" ]]
+  then
+    echo "${filename}.html"
+  else
+    echo "${filename}-${zeroPadded}.html"
+  fi
 }
 
 echo "
@@ -112,7 +143,7 @@ THING_NUMBER="23333435"
 echo "
 * So, it's gonna be ${TYPE}: ${ABBR_TYPE}$THING_NUMBER? \n
 ----------------------------------------------------------------- \n
-Type [y] to confirm or anything else to ABORT if you chickened out\n
+Type [y or !@#$%]\n
 -----------------------------------------------------------------\n"
 #read confirm
 confirm="y"
@@ -130,7 +161,9 @@ if [[ $confirm =~ ^[Yy]$ ]];then
 
     STATIC_FILE="${STATIC_STYLES_PATH}/${TYPES}/_${ELEMENT_NAME}.scss";
     fileExist $STATIC_FILE
-    createFile $STATIC_FILE $(replaceToken "$STATIC_STYLE_COMPONENT_TEMPLATE" $THING_NUMBER)
+    REPLACED_ELEMENT=$(replaceElement "$STATIC_STYLE_COMPONENT_TEMPLATE" $ABBR_TYPE)
+    REPLACED_CONTENT=$(replaceToken "$REPLACED_ELEMENT" $THING_NUMBER)
+    createFile $STATIC_FILE "$REPLACED_CONTENT"
 
     # *************************************************
     #
@@ -139,7 +172,8 @@ if [[ $confirm =~ ^[Yy]$ ]];then
     # *************************************************
 
     MAIN_CSS_FILE="${STATIC_STYLES_PATH}/main.scss"
-    appendContent $MAIN_CSS_FILE $(replaceToken "$STATIC_STYLE_COMPONENT_MAIN_TEMPLATE" $THING_NUMBER)
+    REPLACED_CONTENT=$(replaceToken "$STATIC_STYLE_COMPONENT_MAIN_TEMPLATE" $THING_NUMBER)
+    appendContent $MAIN_CSS_FILE "$REPLACED_CONTENT"
 #    sed '/pattern/a some text here' filename
 
 
@@ -150,7 +184,7 @@ if [[ $confirm =~ ^[Yy]$ ]];then
     # *************************************************
 echo "
 ------------------------------------------------------------------------------------------- \n
-Do you need to create a Javascript file too? Type [y] to confirm or anything else to ABORT \n
+Do you need to create a Javascript file too? [y or !@#$%] \n
 -------------------------------------------------------------------------------------------\n"
 #read confirmJs
 confirmJs="y"
@@ -178,5 +212,23 @@ fi
     if [ $TYPE = 'module' ];then
       SOY_TEMPLATE=$LYSSA_MODULE_TEMPLATE
     fi
-    replaceToken "$SOY_TEMPLATE" $THING_NUMBER
-    createFile $LYSSA_FILE replaceToken "$SOY_TEMPLATE" $THING_NUMBER)
+    REPLACED_CONTENT=$(replaceToken "$SOY_TEMPLATE" $THING_NUMBER)
+    createFile $LYSSA_FILE "$REPLACED_CONTENT"
+
+    # *************************************************
+    #
+    #   adding to guide (optional)
+    #
+    # *************************************************
+    echo "
+    ------------------------------------------------------------------------------------------- \n
+    Do you need to add the ${TYPE} to the guide? [y or !@#$%]  \n
+    -------------------------------------------------------------------------------------------\n"
+    #read confirmGuide
+    confirmGuide="y"
+    if [[ $confirmGuides =~ ^[Yy]$ ]];then
+      #Build guide target file from Element Number
+      GUIDE_PAGE= $(addSuffix $TYPES $(floatDivisionCeiling $THING_NUMBER $GUIDE_COUNT_PER_PAGE))
+      echo $GUIDE_PAGE
+    fi
+
