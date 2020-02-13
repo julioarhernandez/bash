@@ -14,7 +14,7 @@ STATIC_STYLES_PATH="${STATIC_PATH}/styles"
 
 #LYSSA PATHS
 LYSSA_FOLDER="${LYSSA_PATH}/static/oci/api/cms/v1/nclh-template"
-
+LYSSA_GUIDE_PATH="${LYSSA_FOLDER}/guide"
 LYSSA_COMPONENT_TEMPLATE="{namespace oceania.components}
 
 {template .cxxx}
@@ -42,7 +42,14 @@ export default \$(function() {});"
 
 STATIC_STYLE_COMPONENT_TEMPLATE=".Exxx{}"
 
-STATIC_STYLE_COMPONENT_MAIN_TEMPLATE="@import \"components/xxx\";"
+STATIC_STYLE_MAIN_TEMPLATE="@import \"E/xxx\";"
+
+
+PARAM_TEMPLATE_LINK=""
+PARAM_TEMPLATE_BUTTON=""
+PARAM_TEMPLATE_TITLE=""
+PARAM_TEMPLATE_IMAGE=""
+
 
 fileExist(){
   filePath=$1
@@ -51,6 +58,16 @@ fileExist(){
         exit 1
     else
         echo "... File doesn't exist, Let's keep doing this magic"
+    fi
+}
+
+fileExistForWriting(){
+  filePath=$1
+  if [ -f "$filePath" ]; then
+        echo "... File ${filePath} exist."
+    else
+        echo "... File ${filePath} doesn't exist. Please, create this file before"
+        exit 1
     fi
 }
 
@@ -67,16 +84,10 @@ appendContent(){
   echo "${content}" >> $filePath
 }
 
-appendContentCat(){
-  filePath=$1
-  content=$2
-  echo "${content}" >> $filePath
-}
-
 replaceToken(){
   template=$1
   string=$2
-  echo ${template//xxx/${string}}
+  echo "${template//xxx/${string}}"
 }
 replaceElement(){
   template=$1
@@ -102,20 +113,20 @@ addSuffix(){
   #remove 01 as we are not starting at 01
   if [[ $zeroPadded -eq "01" ]]
   then
-    echo "${filename}.html"
+    echo "oceania.guide.${filename}.soy"
   else
-    echo "${filename}-${zeroPadded}.html"
+    echo "oceania.guide.${filename}-${zeroPadded}.soy"
   fi
 }
 
 echo "
 *------------------------------------------ \n
 * What's the THING you are creating? Component[c] or Module[m]?\n"
-#read THING_TYPE
-#if [[ $THING_TYPE =~ ^[cC]$ ]];then
-#  TYPE='component'
-#fi
-THING_TYPE="m"
+read THING_TYPE
+if [[ $THING_TYPE =~ ^[cC]$ ]];then
+  TYPE='component'
+fi
+#THING_TYPE="c"
 case $THING_TYPE in
   [cC])
     TYPES='components'
@@ -138,15 +149,16 @@ echo "Your are creating a ${TYPE}"
 echo "
 *------------------------------------------ \n
 * What's the ${TYPE} number? Just a number please, no characters:\n"
-#read THING_NUMBER
-THING_NUMBER="23333435"
+read THING_NUMBER
+#THING_NUMBER="136"
+ELEMENT_ABBR=${ABBR_TYPE}$THING_NUMBER
 echo "
-* So, it's gonna be ${TYPE}: ${ABBR_TYPE}$THING_NUMBER? \n
+* So, it's gonna be ${TYPE}: ${ELEMENT_ABBR}? \n
 ----------------------------------------------------------------- \n
 Type [y or !@#$%]\n
 -----------------------------------------------------------------\n"
-#read confirm
-confirm="y"
+read confirm
+#confirm="y"
 ELEMENT_NAME=${ABBR_TYPE}$THING_NUMBER
 if [[ $confirm =~ ^[Yy]$ ]];then
     echo "LET'S START CREATING STATIC FILES Mijito\n"
@@ -161,8 +173,8 @@ if [[ $confirm =~ ^[Yy]$ ]];then
 
     STATIC_FILE="${STATIC_STYLES_PATH}/${TYPES}/_${ELEMENT_NAME}.scss";
     fileExist $STATIC_FILE
-    REPLACED_ELEMENT=$(replaceElement "$STATIC_STYLE_COMPONENT_TEMPLATE" $ABBR_TYPE)
-    REPLACED_CONTENT=$(replaceToken "$REPLACED_ELEMENT" $THING_NUMBER)
+    REPLACED_ELEMENT=$(replaceElement "$STATIC_STYLE_COMPONENT_TEMPLATE" $TYPES)
+    REPLACED_CONTENT=$(replaceToken "$REPLACED_ELEMENT" $ELEMENT_ABBR)
     createFile $STATIC_FILE "$REPLACED_CONTENT"
 
     # *************************************************
@@ -172,10 +184,9 @@ if [[ $confirm =~ ^[Yy]$ ]];then
     # *************************************************
 
     MAIN_CSS_FILE="${STATIC_STYLES_PATH}/main.scss"
-    REPLACED_CONTENT=$(replaceToken "$STATIC_STYLE_COMPONENT_MAIN_TEMPLATE" $THING_NUMBER)
+    REPLACED_ELEMENT=$(replaceElement "$STATIC_STYLE_MAIN_TEMPLATE" $TYPES)
+    REPLACED_CONTENT=$(replaceToken "$REPLACED_ELEMENT" $ELEMENT_ABBR)
     appendContent $MAIN_CSS_FILE "$REPLACED_CONTENT"
-#    sed '/pattern/a some text here' filename
-
 
     # *************************************************
     #
@@ -186,8 +197,8 @@ echo "
 ------------------------------------------------------------------------------------------- \n
 Do you need to create a Javascript file too? [y or !@#$%] \n
 -------------------------------------------------------------------------------------------\n"
-#read confirmJs
-confirmJs="y"
+read confirmJs
+#confirmJs="y"
   if [[ $confirmJs =~ ^[Yy]$ ]];then
       #Create javascript on mocks
       STATIC_FILE="${STATIC_SCRIPTS_MOCKS_PATH}/${TYPES}/${ELEMENT_NAME}.js";
@@ -201,16 +212,25 @@ confirmJs="y"
       createFile $STATIC_FILE "$STATIC_SCRIPT_TEMPLATE" $THING_NUMBER
   fi
 fi
+
+    # *************************************************
+    #
+    #   creating Lyssa Component/Module file
+    #
+    # *************************************************
+
+
     echo "NOW, LET'S START CREATING LYSSA FILES\n"
     echo "--------------------------------\n"
     echo "Creating soy file ${TYPE}: ${ABBR_TYPE}$THING_NUMBER.soy?\n"
+
     LYSSA_FILE="${LYSSA_FOLDER}/${TYPES}/oceania.${TYPES}.${ELEMENT_NAME}.soy";
     fileExist $LYSSA_FILE
     if [ $TYPE = 'component' ];then
-      SOY_TEMPLATE=$LYSSA_COMPONENT_TEMPLATE
+      SOY_TEMPLATE=${LYSSA_COMPONENT_TEMPLATE}
     fi
     if [ $TYPE = 'module' ];then
-      SOY_TEMPLATE=$LYSSA_MODULE_TEMPLATE
+      SOY_TEMPLATE=${LYSSA_MODULE_TEMPLATE}
     fi
     REPLACED_CONTENT=$(replaceToken "$SOY_TEMPLATE" $THING_NUMBER)
     createFile $LYSSA_FILE "$REPLACED_CONTENT"
@@ -224,11 +244,79 @@ fi
     ------------------------------------------------------------------------------------------- \n
     Do you need to add the ${TYPE} to the guide? [y or !@#$%]  \n
     -------------------------------------------------------------------------------------------\n"
-    #read confirmGuide
-    confirmGuide="y"
-    if [[ $confirmGuides =~ ^[Yy]$ ]];then
+    read confirmGuide
+#    confirmGuide="y"
+    if [[ $confirmGuide =~ ^[Yy]$ ]];then
       #Build guide target file from Element Number
-      GUIDE_PAGE= $(addSuffix $TYPES $(floatDivisionCeiling $THING_NUMBER $GUIDE_COUNT_PER_PAGE))
-      echo $GUIDE_PAGE
+      GUIDE_PAGE=$(addSuffix $TYPES $(floatDivisionCeiling $THING_NUMBER $GUIDE_COUNT_PER_PAGE))
+      CURRENT_GUIDE_PAGE_PATH="${LYSSA_GUIDE_PATH}/${GUIDE_PAGE}"
+      fileExistForWriting $CURRENT_GUIDE_PAGE_PATH
+      echo "\n... Adding ${ELEMENT_ABBR} to guide\n"
+      #add component/module to guide
+      TEMPLATE_GUIDE_COMPONENTS="<!-- ARTICLE BODY -->\\
+                  <div class=\"guideArticle_body\">\\
+                      <div class=\"guideDivider\">\\
+                          <div class=\"row\">\\
+                              <div class=\"col-md\">\\
+                                  {call oceania.partials.ribbon}\\
+                                      {param ribbon: [\\
+                                        'text': '${ELEMENT_ABBR}'\\
+                                      ] \/}\\
+                                  {\/call}\\
+                              <\/div>\\
+                          <\/div>\\
+                      <\/div>\\
+                      <div class=\"guideBlock\">\\
+                          <div class=\"row\">\\
+                              <div class=\"col-md\">\\
+                                  <div class=\"guideComponents\">\\
+                                      {call oceania.components.${ELEMENT_ABBR}\}\\
+                                          {param class: null \/}\\
+                                      {\/call}\\
+                                  <\/div>\\
+                              <\/div>\\
+                          <\/div>\\
+                      <\/div>\\
+                  <\/div>\\
+\\
+                <!-- BOTTOM DIVIDER -->"
+
+      TEMPLATE_GUIDE_MODULES="<!-- ARTICLE BODY -->\\
+                  <div class=\"guideArticle_body\">\\
+                      <div class=\"guideDivider\">\\
+                          <div class=\"row\">\\
+                              <div class=\"col-md\">\\
+                                  {call oceania.partials.ribbon}\\
+                                      {param ribbon: [\\
+                                        'text': '${ELEMENT_ABBR}'\\
+                                      ] \/}\\
+                                  {\/call}\\
+                              <\/div>\\
+                          <\/div>\\
+                      <\/div>\\
+                      <div class=\"guideBlock\">\\
+                          <div class=\"row\">\\
+                              <div class=\"col-md\">\\
+                                  <div class=\"guideComponents\">\\
+                                      {call oceania.modules.${ELEMENT_ABBR} data=\"\$${ELEMENT_ABBR}\" \/}\\
+                                  <\/div>\\
+                              <\/div>\\
+                          <\/div>\\
+                      <\/div>\\
+                  <\/div>\\
+\\
+                <!-- BOTTOM DIVIDER -->"
+       if [ $TYPE = 'component' ];then
+        GUIDE_CONTENT=${TEMPLATE_GUIDE_COMPONENTS}
+      fi
+      if [ $TYPE = 'module' ];then
+        GUIDE_CONTENT=${TEMPLATE_GUIDE_MODULES}
+      fi
+
+#      REPLACED_ELEMENT=$(replaceToken "$GUIDE_CONTENT" "$ELEMENT_ABBR")
+      sed -i '' -E "s/<!-- BOTTOM DIVIDER -->/$GUIDE_CONTENT/g" $CURRENT_GUIDE_PAGE_PATH
     fi
+
+
+
 
