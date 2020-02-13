@@ -26,15 +26,15 @@ LYSSA_COMPONENT_TEMPLATE="{namespace oceania.components}
     </div>
 {/template}"
 
-LYSSA_MODULE_TEMPLATE="{namespace oceania.modules}\n
+LYSSA_MODULE_TEMPLATE="{namespace oceania.modules}
 
-{template .mxxx}\n
-    {@param? class: string}\n\n
+{template .mxxx}
+    {@param? class: string}
 
-    <!-- mxxx -->\n
-    <section class=\"mxxx{if \$class} {\$class}{/if}\">\n\n
+    <!-- mxxx -->
+    <section class=\"mxxx{if \$class} {\$class}{/if}\">
 
-    </section>\n
+    </section>
 {/template}"
 
 STATIC_SCRIPT_TEMPLATE="import $ from \"jquery\";\n\n
@@ -57,7 +57,7 @@ fileExist(){
         echo "... File ${filePath} already exist please select another compadre, \n***** MIRA QUE YO TE LO DIGO, PRESTA MAS ATENCION ***** \n"
         exit 1
     else
-        echo "... File doesn't exist, Let's keep doing this magic"
+        echo "... Creating files ..."
     fi
 }
 
@@ -74,7 +74,7 @@ fileExistForWriting(){
 createFile(){
   filePath=$1
   content=$2
-  echo $content > $filePath
+  echo "${content}" > $filePath
   echo "... Created ${filePath}"
 }
 
@@ -106,6 +106,14 @@ zeroPad(){
   printf "%02d" $number
 }
 
+divider(){
+  echo "
+*---------------------------------------------------------- \n
+*---------------------------------------------------------- \n"
+}
+bold=$(tput bold)
+normal=$(tput sgr0)
+
 addSuffix(){
   filename=$1
   number=$2
@@ -120,8 +128,20 @@ addSuffix(){
 }
 
 echo "
-*------------------------------------------ \n
-* What's the THING you are creating? Component[c] or Module[m]?\n"
+
+ _                          _
+| |                        | |
+| |      __ _  ____ _   _  | |     _   _  ___  ___   __ _
+| |     / _  ||_  /| | | | | |    | | | |/ __|/ __| / _  |
+| |____| (_| | / / | |_| | | |____| |_| |\__ \\__ \| (_| |
+|______|\__,_|/___| \__, | |______|\__, ||___/|___/ \__,_|
+                     __/ |          __/ |
+                    |___/          |___/
+
+
+"
+divider
+echo "* What's the THING you are creating? \n* Component[c] or Module[m]?\n"
 read THING_TYPE
 if [[ $THING_TYPE =~ ^[cC]$ ]];then
   TYPE='component'
@@ -144,24 +164,22 @@ case $THING_TYPE in
     ;;
 esac
 
-echo "Your are creating a ${TYPE}"
-
+divider
 echo "
-*------------------------------------------ \n
-* What's the ${TYPE} number? Just a number please, no characters:\n"
+* What's the ${bold}${TYPE}${normal} number?\n* Just a number please, no characters:\n"
 read THING_NUMBER
 #THING_NUMBER="136"
 ELEMENT_ABBR=${ABBR_TYPE}$THING_NUMBER
-echo "
-* So, it's gonna be ${TYPE}: ${ELEMENT_ABBR}? \n
------------------------------------------------------------------ \n
-Type [y or !@#$%]\n
------------------------------------------------------------------\n"
+divider
+echo "* Do you mean a  ${TYPE}: ${ELEMENT_ABBR}? \n
+* Type [y or !@#$%]\n"
+
 read confirm
 #confirm="y"
 ELEMENT_NAME=${ABBR_TYPE}$THING_NUMBER
 if [[ $confirm =~ ^[Yy]$ ]];then
-    echo "LET'S START CREATING STATIC FILES Mijito\n"
+    divider
+    echo "Ok, got it\n"
     echo "----------------------------------------\n"
     echo "Creating styles SCSS \n"
 
@@ -193,10 +211,8 @@ if [[ $confirm =~ ^[Yy]$ ]];then
     #   creating javascript element (optional)
     #
     # *************************************************
-echo "
-------------------------------------------------------------------------------------------- \n
-Do you need to create a Javascript file too? [y or !@#$%] \n
--------------------------------------------------------------------------------------------\n"
+divider
+echo "Do you need to create a Javascript file too? [y or !@#$%] \n"
 read confirmJs
 #confirmJs="y"
   if [[ $confirmJs =~ ^[Yy]$ ]];then
@@ -317,6 +333,34 @@ fi
       sed -i '' -E "s/<!-- BOTTOM DIVIDER -->/$GUIDE_CONTENT/g" $CURRENT_GUIDE_PAGE_PATH
     fi
 
-
-
-
+#createFile(){
+#  filePath=$1
+#  content=$2
+#  echo "${content}" > $filePath
+#  echo "... Created ${filePath}"
+#}
+#replaceToken(){
+#  template=$1
+#  string=$2
+#  echo "${template//xxx/${string}}"
+#}
+#
+#LYSSA_COMPONENT_TEMPLATE="{namespace oceania.components}\n
+#{template .cxxx}
+#    {@param? class: string}
+#
+#<!-- cxxx -->
+#<div class=\"cxxx{if \$class} {\$class}{/if}\">
+#
+#</div>
+#{/template}"
+#
+#
+#    SOY_TEMPLATE=${LYSSA_COMPONENT_TEMPLATE}
+#    REPLACED_CONTENT=$(replaceToken "${SOY_TEMPLATE}" "136")
+#    echo "${REPLACED_CONTENT}"
+#    rm -f "/Users/juliorodriguez/work/projects/common/oci-lyssa-mocks/static/oci/api/cms/v1/nclh-template/components/oceania.components.c136.soy"
+#    createFile "/Users/juliorodriguez/work/projects/common/oci-lyssa-mocks/static/oci/api/cms/v1/nclh-template/components/oceania.components.c136.soy" "${REPLACED_CONTENT}"
+#
+#
+#
