@@ -1,9 +1,11 @@
 #!/bin/bash
 
 GUIDE_COUNT_PER_PAGE=50
+PROJECT_STATIC_ROOT_PATH="/work/projects/oceania/redesign-oci-static"
+PROJECT_LYSSA_ROOT_PATH="/work/projects/common/oci-lyssa-mocks"
 
-STATIC_PATH="/Users/juliorodriguez/work/projects/oceania/redesign-oci-static/src"
-LYSSA_PATH="/Users/juliorodriguez/work/projects/common/oci-lyssa-mocks"
+STATIC_PATH="${HOME}${PROJECT_STATIC_ROOT_PATH}/src"
+LYSSA_PATH="${HOME}${PROJECT_LYSSA_ROOT_PATH}"
 
 #STATIC PATHS
 
