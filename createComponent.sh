@@ -17,58 +17,8 @@ STATIC_STYLES_PATH="${STATIC_PATH}/styles"
 #LYSSA PATHS
 LYSSA_FOLDER="${LYSSA_PATH}/static/oci/api/cms/v1/nclh-template"
 LYSSA_GUIDE_PATH="${LYSSA_FOLDER}/guide"
-LYSSA_COMPONENT_TEMPLATE="{namespace oceania.components}
-
-{template .cxxx}
-    {@param? class: string}
-    <DEFLINK>
-    <DEFTITLE>
-    <DEFDROPDOWN>
-    <DEFIMAGE>
-
-    <!-- cxxx -->
-    <div class=\"cxxx{if \$class} {\$class}{/if}\">
-      <div class=\"cxxx_header\">
-        <CALLTITLE>
-      </div>
-      <div class=\"cxxx_body\">
-        <CALLLINK>
-        <CALLDROPDOWN>
-        <CALLIMAGE>
-      </div>
-      <div class=\"cxxx_footer\">
-
-      </div>
-    </div>
-{/template}"
-
-LYSSA_MODULE_TEMPLATE="{namespace oceania.modules}
-
-{template .mxxx}
-    {@param? class: string}
-    <DEFLINK>
-    <DEFTITLE>
-    <DEFDROPDOWN>
-    <DEFIMAGE>
-
-    <!-- mxxx -->
-    <section class=\"mxxx{if \$class} {\$class}{/if}\">
-      <div class=\"mxxx_header\">
-        <CALLTITLE>
-      </div>
-      <div class=\"mxxx_body\">
-        <CALLLINK>
-        <CALLDROPDOWN>
-        <CALLIMAGE>
-      </div>
-      <div class=\"mxxx_aside\">
-
-      </div>
-      <div class=\"mxxx_footer\">
-
-      </div>
-    </section>
-{/template}"
+LYSSA_COMPONENT_TEMPLATE=$(<./component/lyssa_component_template.soy)
+LYSSA_MODULE_TEMPLATE=$(<./module/lyssa_module_template.soy)
 
 STATIC_SCRIPT_TEMPLATE="import $ from \"jquery\";\n\n
 export default \$(function() {});"
@@ -86,67 +36,31 @@ STATIC_STYLE_MAIN_TEMPLATE="@import \"E/xxx\";"
 #####  LINK ######
 
 PARAM_TEMPLATE_LINK_DEFINITION_TOKEN="<DEFLINK>"
-PARAM_TEMPLATE_LINK_DEFINITION="{@param? link: [aria: string, text: string, href: string, title: string, class: string]}"
 PARAM_TEMPLATE_LINK_CALL_TOKEN="<CALLLINK>"
-PARAM_TEMPLATE_LINK_CALL="{call oceania.partials.link}
-          {param  link: [
-              'class': \$link.class,
-              'href': \$link.href,
-              'title': \$link.title,
-              'aria': \$link.aria,
-              'text': \$link.text,
-              'attrs': null
-          ]/}
-        {/call}"
+PARAM_TEMPLATE_LINK_DEFINITION=$(<./component/lyssa_component_link_def.soy)
+PARAM_TEMPLATE_LINK_CALL=$(<./component/lyssa_component_link_call.soy)
 
 #####  DROPDOWNS ######
 
 
 PARAM_TEMPLATE_DROPDOWN_DEFINITION_TOKEN="<DEFDROPDOWN>"
-PARAM_TEMPLATE_DROPDOWN_DEFINITION="{@param? dropdown: [
-        class: string,
-        defaultSelection: [
-            text: string,
-            title: string,
-            aria: string,
-            href: string
-        ],
-        options: list<[href: string, title: string, aria: string, text: string]>
-    ]}"
 PARAM_TEMPLATE_DROPDOWN_CALL_TOKEN="<CALLDROPDOWN>"
-PARAM_TEMPLATE_DROPDOWN_CALL=" {call oceania.partials.form.dropdown}
-            {param class: \$dropdown.class /}
-            {param defaultSelection: [
-                'text': \$dropdown.defaultSelection.text,
-                'aria': \$dropdown.defaultSelection.aria,
-                'title': \$dropdown.defaultSelection.title,
-                'href': \$dropdown.defaultSelection.href
-            ] /}
-            {param options: \$dropdown.options /}
-        {/call}"
+PARAM_TEMPLATE_DROPDOWN_DEFINITION=$(<./component/lyssa_component_dropdown_def.soy)
+PARAM_TEMPLATE_DROPDOWN_CALL=$(<./component/lyssa_component_dropdown_call.soy)
 
 #####  IMAGES ######
 
 PARAM_TEMPLATE_IMAGE_DEFINITION_TOKEN="<DEFIMAGE>"
-PARAM_TEMPLATE_IMAGE_DEFINITION="{@param? image: [desktopAlt: string, desktopSrc: string, tabletAlt: null|string, tabletSrc: null|string, mobileAlt: null|string, mobileSrc: null|string]|null}"
 PARAM_TEMPLATE_IMAGE_CALL_TOKEN="<CALLIMAGE>"
-PARAM_TEMPLATE_IMAGE_CALL="{call oceania.components.c16}
-             {param media:'image' /}
-             {param imageItem: \$image /}
-         {/call}"
+PARAM_TEMPLATE_IMAGE_DEFINITION=$(<./component/lyssa_component_image_def.soy)
+PARAM_TEMPLATE_IMAGE_CALL=$(<./component/lyssa_component_image_call.soy)
 
 #####  TITLE ######
 
 PARAM_TEMPLATE_TITLE_DEFINITION_TOKEN="<DEFTITLE>"
-PARAM_TEMPLATE_TITLE_DEFINITION="{@param? title: string}
-    {@param? titleHtag: string}
-    {@param? titleClass: string}"
 PARAM_TEMPLATE_TITLE_CALL_TOKEN="<CALLTITLE>"
-PARAM_TEMPLATE_TITLE_CALL="{call oceania.partials.title}
-              {param title: \$title /}
-              {param titleHtag: \$titleHtag /}
-              {param titleClass: \$titleClass /}
-          {/call}"
+PARAM_TEMPLATE_TITLE_DEFINITION=$(<./component/lyssa_component_title_def.soy)
+PARAM_TEMPLATE_TITLE_CALL=$(<./component/lyssa_component_title_call.soy)
 
 # *****************************************************
 #
