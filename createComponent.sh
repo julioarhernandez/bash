@@ -525,40 +525,5 @@ fi
     fi
 
     echo "*********************   DONE  *********************"
-###createFile(){
-#  filePath=$1
-#  content=$2
-#  echo "${content}" > $filePath
-#  echo "... Created ${filePath}"
-#}
-#replaceToken(){
-#  template=$1
-#  string=$2
-#  echo "${template//xxx/${string}}"
-#}
-#replaceToken2(){
-#  template=$1
-#  string=$2
-#  token=$3
-#  echo "${template//$token/$string}"
-#}
-
-
-#LYSSA_COMPONENT_TEMPLATE="{namespace oceania.components}\n
-#{template .cxxx}
-#    {@param? class: string}
-#    <DEFLINK>
-#
-#<!-- cxxx -->
-#<div class=\"cxxx{if \$class} {\$class}{/if}\">
-#    <CALLLINK>
-#</div>
-#{/template}"
-#
-#    SOY_TEMPLATE=${LYSSA_COMPONENT_TEMPLATE}
-#    replaceParam "LINK" "$SOY_TEMPLATE"
-#    rm -f "/Users/juliorodriguez/work/projects/common/oci-lyssa-mocks/static/oci/api/cms/v1/nclh-template/components/oceania.components.c136.soy"
-###    createFile "/Users/juliorodriguez/work/projects/common/oci-lyssa-mocks/static/oci/api/cms/v1/nclh-template/components/oceania.components.c136.soy" "${REPLACED_CONTENT}"
-
 
 
