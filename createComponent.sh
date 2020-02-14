@@ -19,10 +19,24 @@ LYSSA_COMPONENT_TEMPLATE="{namespace oceania.components}
 
 {template .cxxx}
     {@param? class: string}
+    <DEFLINK>
+    <DEFTITLE>
+    <DEFDROPDOWN>
+    <DEFIMAGE>
 
     <!-- cxxx -->
     <div class=\"cxxx{if \$class} {\$class}{/if}\">
+      <div class=\"cxxx_header\">
+        <CALLTITLE>
+      </div>
+      <div class=\"cxxx_body\">
+        <CALLLINK>
+        <CALLDROPDOWN>
+        <CALLIMAGE>
+      </div>
+      <div class=\"cxxx_footer\">
 
+      </div>
     </div>
 {/template}"
 
@@ -30,26 +44,113 @@ LYSSA_MODULE_TEMPLATE="{namespace oceania.modules}
 
 {template .mxxx}
     {@param? class: string}
+    <DEFLINK>
+    <DEFTITLE>
+    <DEFDROPDOWN>
+    <DEFIMAGE>
 
     <!-- mxxx -->
     <section class=\"mxxx{if \$class} {\$class}{/if}\">
+      <div class=\"mxxx_header\">
+        <CALLTITLE>
+      </div>
+      <div class=\"mxxx_body\">
+        <CALLLINK>
+        <CALLDROPDOWN>
+        <CALLIMAGE>
+      </div>
+      <div class=\"mxxx_aside\">
 
+      </div>
+      <div class=\"mxxx_footer\">
+
+      </div>
     </section>
 {/template}"
 
 STATIC_SCRIPT_TEMPLATE="import $ from \"jquery\";\n\n
 export default \$(function() {});"
 
-STATIC_STYLE_COMPONENT_TEMPLATE=".Exxx{}"
+STATIC_STYLE_COMPONENT_TEMPLATE=".xxx{}"
 
 STATIC_STYLE_MAIN_TEMPLATE="@import \"E/xxx\";"
 
+# *****************************************************
+#
+#  Params definition and templates
+#
+# *****************************************************
 
-PARAM_TEMPLATE_LINK=""
-PARAM_TEMPLATE_BUTTON=""
-PARAM_TEMPLATE_TITLE=""
-PARAM_TEMPLATE_IMAGE=""
+#####  LINK ######
 
+PARAM_TEMPLATE_LINK_DEFINITION_TOKEN="<DEFLINK>"
+PARAM_TEMPLATE_LINK_DEFINITION="{@param? link: [aria: string, text: string, href: string, title: string, class: string]}"
+PARAM_TEMPLATE_LINK_CALL_TOKEN="<CALLLINK>"
+PARAM_TEMPLATE_LINK_CALL="{call oceania.partials.link}
+          {param  link: [
+              'class': \$link.class,
+              'href': \$link.href,
+              'title': \$link.title,
+              'aria': \$link.aria,
+              'text': \$link.text,
+              'attrs': null
+          ]/}
+        {/call}"
+
+#####  DROPDOWNS ######
+
+
+PARAM_TEMPLATE_DROPDOWN_DEFINITION_TOKEN="<DEFDROPDOWN>"
+PARAM_TEMPLATE_DROPDOWN_DEFINITION="{@param? dropdown: [
+        class: string,
+        defaultSelection: [
+            text: string,
+            title: string,
+            aria: string,
+            href: string
+        ],
+        options: list<[href: string, title: string, aria: string, text: string]>
+    ]}"
+PARAM_TEMPLATE_DROPDOWN_CALL_TOKEN="<CALLDROPDOWN>"
+PARAM_TEMPLATE_DROPDOWN_CALL=" {call oceania.partials.form.dropdown}
+            {param class: \$dropdown.class /}
+            {param defaultSelection: [
+                'text': \$dropdown.defaultSelection.text,
+                'aria': \$dropdown.defaultSelection.aria,
+                'title': \$dropdown.defaultSelection.title,
+                'href': \$dropdown.defaultSelection.href
+            ] /}
+            {param options: \$dropdown.options /}
+        {/call}"
+
+#####  IMAGES ######
+
+PARAM_TEMPLATE_IMAGE_DEFINITION_TOKEN="<DEFIMAGE>"
+PARAM_TEMPLATE_IMAGE_DEFINITION="{@param? image: [desktopAlt: string, desktopSrc: string, tabletAlt: null|string, tabletSrc: null|string, mobileAlt: null|string, mobileSrc: null|string]|null}"
+PARAM_TEMPLATE_IMAGE_CALL_TOKEN="<CALLIMAGE>"
+PARAM_TEMPLATE_IMAGE_CALL="{call oceania.components.c16}
+             {param media:'image' /}
+             {param imageItem: \$image /}
+         {/call}"
+
+#####  TITLE ######
+
+PARAM_TEMPLATE_TITLE_DEFINITION_TOKEN="<DEFTITLE>"
+PARAM_TEMPLATE_TITLE_DEFINITION="{@param? title: string}
+    {@param? titleHtag: string}
+    {@param? titleClass: string}"
+PARAM_TEMPLATE_TITLE_CALL_TOKEN="<CALLTITLE>"
+PARAM_TEMPLATE_TITLE_CALL="{call oceania.partials.title}
+              {param title: \$title /}
+              {param titleHtag: \$titleHtag /}
+              {param titleClass: \$titleClass /}
+          {/call}"
+
+# *****************************************************
+#
+# Helper functions
+#
+# *****************************************************
 
 fileExist(){
   filePath=$1
@@ -93,6 +194,30 @@ replaceElement(){
   template=$1
   string=$2
   echo ${template//E/${string}}
+}
+
+replaceToken2(){
+  template=$1
+  string=$2
+  token=$3
+  echo "${template//$token/${string}}"
+}
+replaceParam(){
+  name=$1
+  template=$2
+  included=$3
+  PARAM_TEMPLATE_DEFINITION="PARAM_TEMPLATE_${name}_DEFINITION"
+  PARAM_TEMPLATE_DEFINITION_TOKEN="PARAM_TEMPLATE_${name}_DEFINITION_TOKEN"
+  PARAM_TEMPLATE_CALL="PARAM_TEMPLATE_${name}_CALL"
+  PARAM_TEMPLATE_CALL_TOKEN="PARAM_TEMPLATE_${name}_CALL_TOKEN"
+  if [[ "$included" == "true" ]];then
+    REPLACED_CONTENT=$(replaceToken2 "${template}" "${!PARAM_TEMPLATE_DEFINITION}" "${!PARAM_TEMPLATE_DEFINITION_TOKEN}")
+    REPLACED_CONTENT=$(replaceToken2 "${REPLACED_CONTENT}" "${!PARAM_TEMPLATE_CALL}" "${!PARAM_TEMPLATE_CALL_TOKEN}")
+  else
+    REPLACED_CONTENT=$(replaceToken2 "${template}" "" "${!PARAM_TEMPLATE_DEFINITION_TOKEN}")
+    REPLACED_CONTENT=$(replaceToken2 "${REPLACED_CONTENT}" "" "${!PARAM_TEMPLATE_CALL_TOKEN}")
+  fi
+#  echo "$REPLACED_CONTENT"
 }
 
 floatDivisionCeiling(){
@@ -191,8 +316,7 @@ if [[ $confirm =~ ^[Yy]$ ]];then
 
     STATIC_FILE="${STATIC_STYLES_PATH}/${TYPES}/_${ELEMENT_NAME}.scss";
     fileExist $STATIC_FILE
-    REPLACED_ELEMENT=$(replaceElement "$STATIC_STYLE_COMPONENT_TEMPLATE" $TYPES)
-    REPLACED_CONTENT=$(replaceToken "$REPLACED_ELEMENT" $ELEMENT_ABBR)
+    REPLACED_CONTENT=$(replaceToken "$STATIC_STYLE_COMPONENT_TEMPLATE" $ELEMENT_ABBR)
     createFile $STATIC_FILE "$REPLACED_CONTENT"
 
     # *************************************************
@@ -249,6 +373,73 @@ fi
       SOY_TEMPLATE=${LYSSA_MODULE_TEMPLATE}
     fi
     REPLACED_CONTENT=$(replaceToken "$SOY_TEMPLATE" $THING_NUMBER)
+    divider
+
+    # ***************
+    # REPLACE LINKS
+    # ***************
+
+    echo "------------------------------------------------------------------------------------------- \n
+    Do you need to use a LINK in this ${TYPE}? [y or !@#$%]  \n
+    -------------------------------------------------------------------------------------------\n"
+     read confirmLink
+#    confirmGuide="y"
+    if [[ $confirmLink =~ ^[Yy]$ ]];then
+      included="true"
+    else
+      included="false"
+    fi
+    replaceParam "LINK" "$REPLACED_CONTENT" $included
+
+    # ***************
+    # REPLACE DROPDOWN
+    # ***************
+
+    echo "------------------------------------------------------------------------------------------- \n
+    Do you need to use a DROPDOWN in this ${TYPE}? [y or !@#$%]  \n
+    -------------------------------------------------------------------------------------------\n"
+     read confirmDrop
+#    confirmGuide="y"
+    if [[ $confirmDrop =~ ^[Yy]$ ]];then
+      included="true"
+    else
+      included="false"
+    fi
+    replaceParam "DROPDOWN" "$REPLACED_CONTENT" $included
+
+    # ***************
+    # REPLACE IMAGE
+    # ***************
+
+    echo "------------------------------------------------------------------------------------------- \n
+    Do you need to use a IMAGE in this ${TYPE}? [y or !@#$%]  \n
+    -------------------------------------------------------------------------------------------\n"
+     read confirmImg
+#    confirmGuide="y"
+    if [[ $confirmImg =~ ^[Yy]$ ]];then
+      included="true"
+    else
+      included="false"
+    fi
+    replaceParam "IMAGE" "$REPLACED_CONTENT" $included
+
+    # ***************
+    # REPLACE TITLE
+    # ***************
+
+    echo "------------------------------------------------------------------------------------------- \n
+    Do you need to use a TITLE in this ${TYPE}? [y or !@#$%]  \n
+    -------------------------------------------------------------------------------------------\n"
+     read confirmTitle
+#    confirmGuide="y"
+    if [[ $confirmTitle =~ ^[Yy]$ ]];then
+      included="true"
+    else
+      included="false"
+    fi
+    replaceParam "TITLE" "$REPLACED_CONTENT" $included
+
+#    echo $REPLACED_CONTENT
     createFile $LYSSA_FILE "$REPLACED_CONTENT"
 
     # *************************************************
@@ -333,7 +524,8 @@ fi
       sed -i '' -E "s/<!-- BOTTOM DIVIDER -->/$GUIDE_CONTENT/g" $CURRENT_GUIDE_PAGE_PATH
     fi
 
-#createFile(){
+    echo "*********************   DONE  *********************"
+###createFile(){
 #  filePath=$1
 #  content=$2
 #  echo "${content}" > $filePath
@@ -344,23 +536,29 @@ fi
 #  string=$2
 #  echo "${template//xxx/${string}}"
 #}
-#
+#replaceToken2(){
+#  template=$1
+#  string=$2
+#  token=$3
+#  echo "${template//$token/$string}"
+#}
+
+
 #LYSSA_COMPONENT_TEMPLATE="{namespace oceania.components}\n
 #{template .cxxx}
 #    {@param? class: string}
+#    <DEFLINK>
 #
 #<!-- cxxx -->
 #<div class=\"cxxx{if \$class} {\$class}{/if}\">
-#
+#    <CALLLINK>
 #</div>
 #{/template}"
 #
-#
 #    SOY_TEMPLATE=${LYSSA_COMPONENT_TEMPLATE}
-#    REPLACED_CONTENT=$(replaceToken "${SOY_TEMPLATE}" "136")
-#    echo "${REPLACED_CONTENT}"
+#    replaceParam "LINK" "$SOY_TEMPLATE"
 #    rm -f "/Users/juliorodriguez/work/projects/common/oci-lyssa-mocks/static/oci/api/cms/v1/nclh-template/components/oceania.components.c136.soy"
-#    createFile "/Users/juliorodriguez/work/projects/common/oci-lyssa-mocks/static/oci/api/cms/v1/nclh-template/components/oceania.components.c136.soy" "${REPLACED_CONTENT}"
-#
-#
-#
+###    createFile "/Users/juliorodriguez/work/projects/common/oci-lyssa-mocks/static/oci/api/cms/v1/nclh-template/components/oceania.components.c136.soy" "${REPLACED_CONTENT}"
+
+
+
