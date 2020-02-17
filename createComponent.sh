@@ -1,5 +1,8 @@
 #!/bin/bash
 
+parent_path=$( cd "$(dirname "${BASH_SOURCE[0]}")" ; pwd -P )
+cd "$parent_path"
+
 GUIDE_COUNT_PER_PAGE=50
 PROJECT_STATIC_ROOT_PATH="/work/projects/oceania/redesign-oci-static"
 PROJECT_LYSSA_ROOT_PATH="/work/projects/common/oci-lyssa-mocks"
@@ -20,8 +23,7 @@ LYSSA_GUIDE_PATH="${LYSSA_FOLDER}/guide"
 LYSSA_COMPONENT_TEMPLATE=$(<./component/lyssa_component_template.soy)
 LYSSA_MODULE_TEMPLATE=$(<./module/lyssa_module_template.soy)
 
-STATIC_SCRIPT_TEMPLATE="import $ from \"jquery\";\n\n
-export default \$(function() {});"
+STATIC_SCRIPT_TEMPLATE=$(<./component/lyssa_component_javascript.js)
 
 STATIC_STYLE_COMPONENT_TEMPLATE=".xxx{}"
 
